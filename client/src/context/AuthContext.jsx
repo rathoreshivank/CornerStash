@@ -52,8 +52,13 @@ export function AuthProvider({ children }) {
     setUser(null);
   }
 
+  // Update user state when profile is edited or avatar uploaded
+  function updateUser(updatedUser) {
+    setUser((prev) => ({ ...prev, ...updatedUser }));
+  }
+
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, token, loading, login, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

@@ -33,6 +33,20 @@ const userSchema = new mongoose.Schema(
         type: [Number], // [longitude, latitude]
       },
     },
+    avatarUrl: {
+      type: String,
+      default: '',
+    },
+    bio: {
+      type: String,
+      default: '',
+      maxlength: [300, 'Bio cannot exceed 300 characters'],
+    },
+    neighborhood: {
+      type: String,
+      default: '',
+      maxlength: [100, 'Neighborhood name cannot exceed 100 characters'],
+    },
   },
   { timestamps: true }
 );
@@ -58,6 +72,9 @@ userSchema.methods.toSafeObject = function () {
     name: this.name,
     email: this.email,
     location: this.location,
+    avatarUrl: this.avatarUrl || '',
+    bio: this.bio || '',
+    neighborhood: this.neighborhood || '',
     createdAt: this.createdAt,
   };
 };
