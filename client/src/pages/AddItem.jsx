@@ -73,7 +73,7 @@ export default function AddItem() {
     setPreview(URL.createObjectURL(file));
   }
 
-  // Detect GPS coordinates and auto-resolve neighborhood locality
+  // Detect GPS coordinates quickly without external network dependencies
   function detectLocation() {
     if (!navigator.geolocation) {
       setLocationStatus('Geolocation is not supported by your browser.');
@@ -91,41 +91,29 @@ export default function AddItem() {
           latitude: lat,
           longitude: lng,
         }));
-        setLocationStatus('Location detected.');
+        setLocationStatus('GPS location detected successfully.');
         setLocating(false);
-
-        // Reverse-geocode to find friendly neighborhood name
-        fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`)
-          .then((res) => res.json())
-          .then((data) => {
-            if (data && data.address) {
-              const suburb =
-                data.address.suburb ||
-                data.address.neighbourhood ||
-                data.address.residential ||
-                data.address.city_district ||
-                data.address.city ||
-                '';
-              if (suburb) {
-                setForm((prev) => ({
-                  ...prev,
-                  locationName: prev.locationName || suburb,
-                }));
-              }
-            }
-          })
-          .catch(() => {});
       },
       (err) => {
         setLocating(false);
         setLocationStatus(
           err.code === 1
-            ? 'Permission denied. Please enter coordinates manually.'
+            ? 'Permission denied. Please enter coordinates manually or use the demo location.'
             : 'Could not detect location. Please enter coordinates manually.'
         );
       },
-      { timeout: 10000 }
+      { timeout: 8000 }
     );
+  }
+
+  function useDemoLocation() {
+    setForm((prev) => ({
+      ...prev,
+      latitude: '28.4575',
+      longitude: '77.1782',
+      locationName: prev.locationName || 'South Delhi',
+    }));
+    setLocationStatus('Demo coordinates applied.');
   }
 
   // Form submit
@@ -468,15 +456,25 @@ export default function AddItem() {
                   Items appear on the local browse feed within a 5 km neighborhood radius.
                 </p>
 
-                <button
-                  type="button"
-                  onClick={detectLocation}
-                  disabled={locating}
-                  className="w-full min-h-[40px] px-3 text-xs font-medium text-[#1B5E3C] bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-md transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50"
-                >
-                  <RotateCw className={`w-3.5 h-3.5 ${locating ? 'animate-spin' : ''}`} />
-                  <span>{locating ? 'Detecting coordinates…' : 'Use my current location (GPS)'}</span>
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={detectLocation}
+                    disabled={locating}
+                    className="flex-1 min-h-[40px] px-3 text-xs font-semibold text-[#1B5E3C] bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-md transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50"
+                  >
+                    <RotateCw className={`w-3.5 h-3.5 ${locating ? 'animate-spin' : ''}`} />
+                    <span>{locating ? 'Detecting coordinates…' : 'Use GPS location'}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={useDemoLocation}
+                    className="min-h-[40px] px-3 text-xs font-medium text-stone-700 bg-stone-100 hover:bg-stone-200 border border-stone-200 rounded-md transition-colors"
+                    title="Quickly fill demo coordinates"
+                  >
+                    Demo location
+                  </button>
+                </div>
 
                 {locationStatus && (
                   <p className="text-xs text-stone-500 italic">{locationStatus}</p>

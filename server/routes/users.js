@@ -42,27 +42,17 @@ router.get('/:id/profile', async (req, res) => {
     }
 
     // Community Statistics
-    const [itemsListedCount, itemsGiftedCount, itemsReceivedCount, reviews, activeListings] =
+    const [itemsListedCount, itemsGiftedCount, itemsReceivedCount, activeListings] =
       await Promise.all([
         Item.countDocuments({ owner: user._id }),
         Item.countDocuments({ owner: user._id, status: 'claimed' }),
         Request.countDocuments({ requester: user._id, status: 'accepted' }),
-        Review.find({ recipient: user._id })
-          .populate('reviewer', 'name avatarUrl createdAt')
-          .sort({ createdAt: -1 })
-          .lean(),
         Item.find({ owner: user._id, status: 'available' })
-          .select('title description category imageUrl createdAt')
+          .select('title description category imageUrl condition locationName createdAt')
           .sort({ createdAt: -1 })
           .limit(6)
           .lean(),
       ]);
-
-    const ratingCount = reviews.length;
-    const ratingAverage =
-      ratingCount > 0
-        ? parseFloat((reviews.reduce((sum, r) => sum + r.rating, 0) / ratingCount).toFixed(1))
-        : 0;
 
     res.json({
       user: {
@@ -77,10 +67,7 @@ router.get('/:id/profile', async (req, res) => {
         itemsListedCount,
         itemsGiftedCount,
         itemsReceivedCount,
-        ratingAverage,
-        ratingCount,
       },
-      reviews,
       activeListings,
     });
   } catch (err) {

@@ -4,7 +4,6 @@ import {
   CheckCircle2,
   MapPin,
   Calendar,
-  Star,
   Package,
   Gift,
   HeartHandshake,
@@ -158,161 +157,72 @@ export default function NeighborProfileModal({ userId, onClose }) {
             </div>
 
             {/* Quick Stats Grid */}
-            <div className="grid grid-cols-4 divide-x divide-stone-200 border-b border-stone-200 bg-white text-center py-3">
-              <div className="px-2">
+            {/* Quick Community Stats Grid */}
+            <div className="grid grid-cols-3 divide-x divide-stone-200 border-b border-stone-200 bg-white text-center py-3.5">
+              <div className="px-3">
                 <span className="block text-base sm:text-lg font-bold text-stone-900">
-                  {profile.stats.itemsListedCount}
+                  {profile.stats.itemsListedCount || 0}
                 </span>
-                <span className="block text-[10px] sm:text-xs text-stone-500 font-medium">
-                  Listed
+                <span className="block text-[10px] sm:text-xs text-stone-500 font-medium mt-0.5">
+                  Items Listed
                 </span>
               </div>
-              <div className="px-2">
+              <div className="px-3">
                 <span className="block text-base sm:text-lg font-bold text-[#1B5E3C]">
-                  {profile.stats.itemsGiftedCount}
+                  {profile.stats.itemsGiftedCount || 0}
                 </span>
-                <span className="block text-[10px] sm:text-xs text-stone-500 font-medium">
-                  Gifted Away
+                <span className="block text-[10px] sm:text-xs text-stone-500 font-medium mt-0.5">
+                  Gifted to Neighbors
                 </span>
               </div>
-              <div className="px-2">
+              <div className="px-3">
                 <span className="block text-base sm:text-lg font-bold text-stone-900">
-                  {profile.stats.itemsReceivedCount}
+                  {profile.stats.itemsReceivedCount || 0}
                 </span>
-                <span className="block text-[10px] sm:text-xs text-stone-500 font-medium">
-                  Received
-                </span>
-              </div>
-              <div className="px-2">
-                <div className="flex items-center justify-center gap-1 text-base sm:text-lg font-bold text-amber-600">
-                  <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-500" />
-                  {profile.stats.ratingCount > 0 ? profile.stats.ratingAverage : 'New'}
-                </div>
-                <span className="block text-[10px] sm:text-xs text-stone-500 font-medium">
-                  {profile.stats.ratingCount > 0
-                    ? `${profile.stats.ratingCount} reviews`
-                    : 'No reviews yet'}
+                <span className="block text-[10px] sm:text-xs text-stone-500 font-medium mt-0.5">
+                  Items Received
                 </span>
               </div>
             </div>
 
-            {/* Tabs for Active Listings and Reviews */}
-            <div className="border-b border-stone-200 flex">
-              <button
-                type="button"
-                onClick={() => setActiveTab('listings')}
-                className={`flex-1 py-2.5 text-xs font-semibold border-b-2 transition-colors flex items-center justify-center gap-1.5 ${
-                  activeTab === 'listings'
-                    ? 'border-[#1B5E3C] text-[#1B5E3C]'
-                    : 'border-transparent text-stone-500 hover:text-stone-700'
-                }`}
-              >
-                <Package className="w-3.5 h-3.5" />
-                Active Items ({profile.activeListings?.length || 0})
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab('reviews')}
-                className={`flex-1 py-2.5 text-xs font-semibold border-b-2 transition-colors flex items-center justify-center gap-1.5 ${
-                  activeTab === 'reviews'
-                    ? 'border-[#1B5E3C] text-[#1B5E3C]'
-                    : 'border-transparent text-stone-500 hover:text-stone-700'
-                }`}
-              >
-                <Star className="w-3.5 h-3.5" />
-                Community Reviews ({profile.reviews?.length || 0})
-              </button>
-            </div>
+            {/* Active Listings Section */}
+            <div className="p-5 max-h-72 overflow-y-auto">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-stone-500 mb-3 flex items-center gap-1.5">
+                <Package className="w-3.5 h-3.5 text-[#1B5E3C]" />
+                <span>Active Listings ({profile.activeListings?.length || 0})</span>
+              </h4>
 
-            {/* Tab Content */}
-            <div className="p-5 max-h-64 overflow-y-auto">
-              {activeTab === 'listings' && (
-                <div>
-                  {profile.activeListings?.length === 0 ? (
-                    <div className="text-center py-6 text-stone-500 text-xs">
-                      No other active items listed by this neighbor right now.
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-2 gap-3">
-                      {profile.activeListings.map((item) => (
-                        <div
-                          key={item._id}
-                          className="border border-stone-200 rounded-md p-2 bg-stone-50 flex gap-2.5 items-center"
-                        >
-                          <img
-                            src={item.imageUrl}
-                            alt={item.title}
-                            className="w-12 h-12 rounded object-cover bg-stone-200 shrink-0"
-                          />
-                          <div className="min-w-0 flex-1">
-                            <span className="text-[10px] font-semibold text-[#1B5E3C] uppercase">
-                              {item.category}
-                            </span>
-                            <p className="text-xs font-semibold text-stone-900 truncate">
-                              {item.title}
-                            </p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+              {profile.activeListings?.length === 0 ? (
+                <div className="text-center py-6 text-stone-500 text-xs">
+                  No other active items listed by this neighbor right now.
                 </div>
-              )}
-
-              {activeTab === 'reviews' && (
-                <div className="space-y-3">
-                  {profile.reviews?.length === 0 ? (
-                    <div className="text-center py-6 text-stone-500 text-xs">
-                      No reviews yet. Reviews are unlocked when neighbors complete a giveaway exchange.
-                    </div>
-                  ) : (
-                    profile.reviews.map((rev) => (
-                      <div
-                        key={rev._id}
-                        className="border border-stone-100 bg-stone-50 rounded-lg p-3 space-y-1.5"
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            {rev.reviewer?.avatarUrl ? (
-                              <img
-                                src={rev.reviewer.avatarUrl}
-                                alt={rev.reviewer.name}
-                                className="w-6 h-6 rounded-full object-cover"
-                              />
-                            ) : (
-                              <div className="w-6 h-6 rounded-full bg-stone-200 text-stone-700 font-semibold text-[10px] flex items-center justify-center">
-                                {rev.reviewer?.name?.charAt(0) || 'N'}
-                              </div>
-                            )}
-                            <span className="text-xs font-medium text-stone-900">
-                              {rev.reviewer?.name || 'Neighbor'}
-                            </span>
-                          </div>
-                          {/* Stars */}
-                          <div className="flex items-center gap-0.5">
-                            {[...Array(5)].map((_, i) => (
-                              <Star
-                                key={i}
-                                className={`w-3 h-3 ${
-                                  i < rev.rating
-                                    ? 'text-amber-500 fill-amber-400'
-                                    : 'text-stone-300'
-                                }`}
-                              />
-                            ))}
-                          </div>
-                        </div>
-                        <p className="text-xs text-stone-700 leading-relaxed">&ldquo;{rev.comment}&rdquo;</p>
-                        <p className="text-[10px] text-stone-400">
-                          {new Date(rev.createdAt).toLocaleDateString('en-US', {
-                            month: 'short',
-                            day: 'numeric',
-                            year: 'numeric',
-                          })}
+              ) : (
+                <div className="grid grid-cols-2 gap-3">
+                  {profile.activeListings.map((item) => (
+                    <div
+                      key={item._id}
+                      className="border border-stone-200 rounded-lg p-2.5 bg-stone-50 flex gap-2.5 items-center"
+                    >
+                      <img
+                        src={item.imageUrl}
+                        alt={item.title}
+                        className="w-12 h-12 rounded object-cover bg-stone-200 shrink-0"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <span className="text-[10px] font-bold text-[#1B5E3C] uppercase block">
+                          {item.category}
+                        </span>
+                        <p className="text-xs font-semibold text-stone-900 truncate">
+                          {item.title}
                         </p>
+                        {item.condition && (
+                          <span className="text-[10px] text-stone-400">
+                            {item.condition}
+                          </span>
+                        )}
                       </div>
-                    ))
-                  )}
+                    </div>
+                  ))}
                 </div>
               )}
             </div>

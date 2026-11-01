@@ -1,4 +1,4 @@
-import { X, MapPin, CheckCircle2, Star, Calendar, Clock, Check, User } from 'lucide-react';
+import { X, MapPin, CheckCircle2, Calendar, Clock, Check, User } from 'lucide-react';
 
 function formatMemberSince(dateString) {
   if (!dateString) return 'Recent neighbor';
@@ -145,22 +145,12 @@ export default function ItemDetailModal({
               </button>
 
               <div className="flex flex-col items-end gap-1">
-                {item.owner?.ratingCount > 0 ? (
-                  <span className="inline-flex items-center gap-1 text-xs font-bold text-amber-800 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-md">
-                    <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-500" />
-                    {item.owner.ratingAverage} ({item.owner.ratingCount})
-                  </span>
-                ) : (
-                  <span className="text-[11px] text-stone-500 font-medium bg-white px-2 py-0.5 rounded border border-stone-200">
-                    New Neighbor
-                  </span>
-                )}
                 <button
                   type="button"
                   onClick={() => onOpenOwnerProfile(item.owner?._id)}
-                  className="text-[11px] text-[#1B5E3C] hover:underline font-semibold"
+                  className="px-3 py-1.5 text-xs font-semibold text-[#1B5E3C] bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg transition-colors"
                 >
-                  View credibility sheet
+                  View neighbor profile
                 </button>
               </div>
             </div>

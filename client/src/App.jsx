@@ -40,8 +40,8 @@ function AppRoutes() {
     <div className="min-h-screen bg-[#F6F5EE] text-[#19211E] antialiased flex flex-col">
       <ScrollToTop />
       <Navbar />
-      <div key={location.pathname} className="page-enter flex-1">
-        <Routes location={location}>
+      <div className="flex-1">
+        <Routes>
           <Route path="/" element={<Home />} />
           <Route
             path="/register"

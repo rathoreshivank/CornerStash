@@ -113,14 +113,6 @@ router.get('/nearby', async (req, res) => {
         },
       },
       {
-        $lookup: {
-          from: 'reviews',
-          localField: 'owner',
-          foreignField: 'recipient',
-          as: 'ownerReviews',
-        },
-      },
-      {
         $project: {
           title: 1,
           description: 1,
@@ -141,14 +133,6 @@ router.get('/nearby', async (req, res) => {
           'owner.avatarUrl': { $ifNull: ['$ownerDetails.avatarUrl', ''] },
           'owner.neighborhood': { $ifNull: ['$ownerDetails.neighborhood', ''] },
           'owner.createdAt': '$ownerDetails.createdAt',
-          'owner.ratingAverage': {
-            $cond: {
-              if: { $gt: [{ $size: '$ownerReviews' }, 0] },
-              then: { $round: [{ $avg: '$ownerReviews.rating' }, 1] },
-              else: null,
-            },
-          },
-          'owner.ratingCount': { $size: '$ownerReviews' },
         },
       },
     ]);

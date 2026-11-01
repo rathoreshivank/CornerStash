@@ -40,7 +40,7 @@ export default function Navbar() {
     return () => {
       isMounted = false;
     };
-  }, [token, user, location.pathname]);
+  }, [token, user]);
 
   function handleNavSearchSubmit(e) {
     e.preventDefault();

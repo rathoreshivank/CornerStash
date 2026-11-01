@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import API_URL from '../config';
 import NeighborProfileModal from '../components/NeighborProfileModal';
-import RatingModal from '../components/RatingModal';
 import {
   Package,
   Inbox,
@@ -18,90 +17,60 @@ import {
   Store,
   ShieldCheck,
   Calendar,
-  Star,
   User,
+  RotateCw,
 } from 'lucide-react';
 
 export default function Dashboard() {
   const { token, user } = useAuth();
   const [activeTab, setActiveTab] = useState('listings'); // 'listings' | 'requests'
 
-  // Listings state
+  // Listings & Requests state
   const [listings, setListings] = useState([]);
-  const [loadingListings, setLoadingListings] = useState(true);
-
-  // Requests state
   const [myRequests, setMyRequests] = useState([]);
-  const [loadingRequests, setLoadingRequests] = useState(true);
+  const [loading, setLoading] = useState(true);
 
   // Action feedback
   const [actionError, setActionError] = useState('');
   const [actionSuccess, setActionSuccess] = useState('');
   const [processingId, setProcessingId] = useState(null);
 
-  // Reviews and neighbor profile inspection
-  const [reviewsMap, setReviewsMap] = useState({});
+  // Neighbor profile inspection
   const [selectedNeighborId, setSelectedNeighborId] = useState(null);
-  const [ratingModalData, setRatingModalData] = useState(null); // { item, targetName, role }
 
-  // Fetch submitted reviews map
-  const fetchReviewsMap = useCallback(async () => {
+  // Unified fetch for listings & requests
+  const fetchAllData = useCallback(async () => {
     if (!token) return;
+    setLoading(true);
+    setActionError('');
     try {
-      const res = await fetch(`${API_URL}/api/reviews/my-reviews`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setReviewsMap(data.reviews || {});
-      }
-    } catch {
-      // Non-critical, ignore
-    }
-  }, [token]);
+      const [listingsRes, requestsRes] = await Promise.all([
+        fetch(`${API_URL}/api/items/my-listings`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+        fetch(`${API_URL}/api/requests/my-requests`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+      ]);
 
-  // Fetch listings and requests
-  const fetchListings = useCallback(async () => {
-    if (!token) return;
-    setLoadingListings(true);
-    try {
-      const res = await fetch(`${API_URL}/api/items/my-listings`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.ok) {
-        const data = await res.json();
+      if (listingsRes.ok) {
+        const data = await listingsRes.json();
         setListings(data.items || []);
       }
-    } catch {
-      setActionError('Could not load your listings.');
-    } finally {
-      setLoadingListings(false);
-    }
-  }, [token]);
-
-  const fetchMyRequests = useCallback(async () => {
-    if (!token) return;
-    setLoadingRequests(true);
-    try {
-      const res = await fetch(`${API_URL}/api/requests/my-requests`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.ok) {
-        const data = await res.json();
+      if (requestsRes.ok) {
+        const data = await requestsRes.json();
         setMyRequests(data.requests || []);
       }
     } catch {
-      setActionError('Could not load your requests.');
+      setActionError('Could not load dashboard data. Please check your connection.');
     } finally {
-      setLoadingRequests(false);
+      setLoading(false);
     }
   }, [token]);
 
   useEffect(() => {
-    fetchListings();
-    fetchMyRequests();
-    fetchReviewsMap();
-  }, [fetchListings, fetchMyRequests, fetchReviewsMap]);
+    fetchAllData();
+  }, [fetchAllData]);
 
   // Accept request
   async function handleAccept(requestId) {
@@ -122,8 +91,7 @@ export default function Dashboard() {
       }
 
       setActionSuccess('Request accepted! The item is claimed and contact information is now unlocked.');
-      fetchListings();
-      fetchMyRequests();
+      fetchAllData();
     } catch {
       setActionError('Network error. Could not accept request.');
     } finally {
@@ -150,7 +118,7 @@ export default function Dashboard() {
       }
 
       setActionSuccess('Request rejected.');
-      fetchListings();
+      fetchAllData();
     } catch {
       setActionError('Network error. Could not reject request.');
     } finally {
@@ -181,7 +149,7 @@ export default function Dashboard() {
       }
 
       setActionSuccess('Listing deleted successfully.');
-      fetchListings();
+      fetchAllData();
     } catch {
       setActionError('Network error. Could not delete listing.');
     } finally {
@@ -329,9 +297,10 @@ export default function Dashboard() {
         {/* TAB 1: My Listings */}
         {activeTab === 'listings' && (
           <section className="space-y-5">
-            {loadingListings ? (
-              <div className="text-center py-12 text-sm text-stone-500">
-                Loading your listings…
+            {loading ? (
+              <div className="text-center py-12 text-sm text-stone-500 flex items-center justify-center gap-2">
+                <RotateCw className="w-4 h-4 animate-spin text-[#1B5E3C]" />
+                <span>Loading your listings…</span>
               </div>
             ) : listings.length === 0 ? (
               <div className="bg-white border border-stone-200 rounded-xl p-10 text-center shadow-sm max-w-lg mx-auto">
@@ -440,28 +409,6 @@ export default function Dashboard() {
                               <Mail className="w-3.5 h-3.5" />
                               <span>Email to Coordinate</span>
                             </a>
-                          )}
-
-                          {reviewsMap[item._id] ? (
-                            <span className="inline-flex items-center gap-1.5 px-3 py-2 bg-amber-100/70 text-amber-900 rounded-lg text-xs font-semibold border border-amber-300">
-                              <Star className="w-3.5 h-3.5 fill-amber-500 text-amber-600" />
-                              You rated {reviewsMap[item._id].rating}★
-                            </span>
-                          ) : (
-                            <button
-                              type="button"
-                              onClick={() =>
-                                setRatingModalData({
-                                  item,
-                                  targetName: acceptedReq.requester?.name,
-                                  role: 'claimant',
-                                })
-                              }
-                              className="min-h-[38px] px-3.5 py-2 bg-white hover:bg-amber-50 text-amber-900 border border-amber-300 font-semibold text-xs rounded-lg shadow-sm flex items-center gap-1.5 transition-colors"
-                            >
-                              <Star className="w-3.5 h-3.5 text-amber-600" />
-                              <span>Rate Receiver</span>
-                            </button>
                           )}
                         </div>
                       </div>
@@ -576,9 +523,10 @@ export default function Dashboard() {
         {/* TAB 2: My Requests */}
         {activeTab === 'requests' && (
           <section className="space-y-4">
-            {loadingRequests ? (
-              <div className="text-center py-12 text-sm text-stone-500">
-                Loading your requests…
+            {loading ? (
+              <div className="text-center py-12 text-sm text-stone-500 flex items-center justify-center gap-2">
+                <RotateCw className="w-4 h-4 animate-spin text-[#1B5E3C]" />
+                <span>Loading your requests…</span>
               </div>
             ) : myRequests.length === 0 ? (
               <div className="bg-white border border-stone-200 rounded-xl p-10 text-center shadow-sm max-w-lg mx-auto">
@@ -704,28 +652,6 @@ export default function Dashboard() {
                               <span>Email for Address</span>
                             </a>
                           )}
-
-                          {req.item && reviewsMap[req.item._id] ? (
-                            <span className="inline-flex items-center gap-1.5 px-3 py-2 bg-amber-100/70 text-amber-900 rounded-lg text-xs font-semibold border border-amber-300">
-                              <Star className="w-3.5 h-3.5 fill-amber-500 text-amber-600" />
-                              You rated {reviewsMap[req.item._id].rating}★
-                            </span>
-                          ) : req.item ? (
-                            <button
-                              type="button"
-                              onClick={() =>
-                                setRatingModalData({
-                                  item: req.item,
-                                  targetName: req.owner?.name,
-                                  role: 'giver',
-                                })
-                              }
-                              className="min-h-[38px] px-3.5 py-2 bg-white hover:bg-amber-50 text-amber-900 border border-amber-300 font-semibold text-xs rounded-lg shadow-sm flex items-center gap-1.5 transition-colors"
-                            >
-                              <Star className="w-3.5 h-3.5 text-amber-600" />
-                              <span>Rate Giver</span>
-                            </button>
-                          ) : null}
                         </div>
                       </div>
                     )}
@@ -743,27 +669,6 @@ export default function Dashboard() {
         <NeighborProfileModal
           userId={selectedNeighborId}
           onClose={() => setSelectedNeighborId(null)}
-        />
-      )}
-
-      {/* Rating & Review Modal */}
-      {ratingModalData && (
-        <RatingModal
-          item={ratingModalData.item}
-          targetName={ratingModalData.targetName}
-          role={ratingModalData.role}
-          onClose={() => setRatingModalData(null)}
-          onSuccess={(newReview) => {
-            setReviewsMap((prev) => ({
-              ...prev,
-              [ratingModalData.item._id]: {
-                rating: newReview.rating,
-                comment: newReview.comment,
-                createdAt: newReview.createdAt,
-              },
-            }));
-            setActionSuccess('Thank you for submitting your rating and building community trust!');
-          }}
         />
       )}
     </main>

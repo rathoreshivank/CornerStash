@@ -13,24 +13,10 @@ const reviewRoutes = require('./routes/reviews');
 
 const app = express();
 
-// Allow requests from React frontend (local and deployed on Vercel)
-const allowedOrigins = [
-  'http://localhost:5173',
-  'http://localhost:3000',
-  process.env.CLIENT_URL,
-].filter(Boolean);
-
+// Robust CORS: Allow React frontend across localhost and deployed domains (Vercel, custom)
 app.use(
   cors({
-    origin: (origin, callback) => {
-      // Allow requests with no origin (curl, mobile, health checks) or matches allowed domains
-      if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
-        callback(null, true);
-      } else {
-        // Fallback for custom domains
-        callback(null, true);
-      }
-    },
+    origin: true,
     credentials: true,
   })
 );

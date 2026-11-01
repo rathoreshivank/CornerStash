@@ -23,7 +23,6 @@ import {
   ShieldCheck,
   HeartHandshake,
   CheckCircle2,
-  Star,
 } from 'lucide-react';
 
 function formatMemberSince(dateString) {
@@ -356,15 +355,30 @@ export default function Home() {
                 </p>
               )}
 
-              <div className="flex items-center gap-2 pt-1 border-t border-stone-200/80">
+              <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-stone-200/80">
                 <button
                   type="button"
                   onClick={detectLocation}
                   disabled={locating}
-                  className="flex-1 min-h-[36px] px-3 text-xs font-medium text-[#1B5E3C] bg-white border border-stone-300 rounded hover:bg-stone-50 transition-colors flex items-center justify-center gap-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1B5E3C] disabled:opacity-50"
+                  className="flex-1 min-h-[36px] px-3 text-xs font-semibold text-[#1B5E3C] bg-white border border-stone-300 rounded hover:bg-stone-50 transition-colors flex items-center justify-center gap-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1B5E3C] disabled:opacity-50"
                 >
                   <RotateCw className={`w-3.5 h-3.5 ${locating ? 'animate-spin' : ''}`} />
                   {locating ? 'Locating…' : 'Use GPS'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const demoLat = '28.4575';
+                    const demoLng = '77.1782';
+                    setCoords({ lat: demoLat, lng: demoLng });
+                    sessionStorage.setItem('giveaway_lat', demoLat);
+                    sessionStorage.setItem('giveaway_lng', demoLng);
+                    setShowManualLoc(false);
+                  }}
+                  className="min-h-[36px] px-2.5 text-xs font-medium text-stone-700 bg-emerald-50/70 border border-emerald-200 rounded hover:bg-emerald-100 transition-colors"
+                  title="Switch to active demo listings in Delhi/NCR"
+                >
+                  Demo area
                 </button>
                 <button
                   type="button"
@@ -569,6 +583,22 @@ export default function Home() {
             </p>
 
             <div className="mt-5 flex flex-wrap justify-center gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  const demoLat = '28.4575';
+                  const demoLng = '77.1782';
+                  setCoords({ lat: demoLat, lng: demoLng });
+                  sessionStorage.setItem('giveaway_lat', demoLat);
+                  sessionStorage.setItem('giveaway_lng', demoLng);
+                  setSelectedCategory('All');
+                  handleClearSearch();
+                }}
+                className="min-h-[40px] px-4 text-xs sm:text-sm font-semibold text-[#1B5E3C] bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-md transition-colors"
+              >
+                Explore demo items (Delhi/NCR)
+              </button>
+
               {(activeSearch || selectedCategory !== 'All') && (
                 <button
                   type="button"
@@ -686,18 +716,11 @@ export default function Home() {
                           </div>
                         </button>
 
-                        <div className="shrink-0 flex items-center gap-1">
-                          {item.owner?.ratingCount > 0 ? (
-                            <span className="inline-flex items-center gap-0.5 text-[10px] font-bold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200">
-                              <Star className="w-2.5 h-2.5 fill-amber-400 text-amber-500" />
-                              {item.owner.ratingAverage}
-                            </span>
-                          ) : (
-                            <span className="text-[10px] text-stone-400 font-medium bg-stone-50 px-1 py-0.5 rounded">
-                              New
-                            </span>
-                          )}
-                        </div>
+                        {item.locationName && (
+                          <span className="shrink-0 text-[10px] font-medium text-stone-500 bg-stone-100 px-1.5 py-0.5 rounded truncate max-w-[100px]" title={item.locationName}>
+                            {item.locationName}
+                          </span>
+                        )}
                       </div>
 
                       {/* Title */}

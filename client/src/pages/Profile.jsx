@@ -5,7 +5,6 @@ import {
   CheckCircle2,
   Calendar,
   MapPin,
-  Star,
   Package,
   Gift,
   HeartHandshake,
@@ -44,12 +43,11 @@ export default function Profile() {
   const [profileSuccess, setProfileSuccess] = useState('');
   const [profileError, setProfileError] = useState('');
 
-  // Stats and reviews state
+  // Community stats state
   const [stats, setStats] = useState(null);
-  const [reviews, setReviews] = useState([]);
   const [loadingData, setLoadingData] = useState(true);
 
-  // Fetch full profile info including stats and reviews
+  // Fetch full profile info including stats
   useEffect(() => {
     if (!user?._id) return;
 
@@ -60,7 +58,6 @@ export default function Profile() {
         const data = await res.json();
         if (res.ok && isMounted) {
           setStats(data.stats);
-          setReviews(data.reviews || []);
           if (data.user) {
             setName(data.user.name || '');
             setBio(data.user.bio || '');
@@ -292,9 +289,9 @@ export default function Profile() {
           {/* Quick Stats Grid */}
           <div className="bg-white border border-stone-200 rounded-xl p-5 shadow-sm">
             <h3 className="text-xs font-bold text-stone-500 uppercase tracking-wider mb-3">
-              Community Impact & Trust Record
+              Community Impact
             </h3>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+            <div className="grid grid-cols-3 gap-3 text-center">
               <div className="bg-stone-50 border border-stone-100 rounded-lg p-3">
                 <Package className="w-4 h-4 text-stone-400 mx-auto mb-1" />
                 <span className="block text-xl font-bold text-stone-900">
@@ -315,15 +312,6 @@ export default function Profile() {
                   {stats ? stats.itemsReceivedCount : '—'}
                 </span>
                 <span className="text-[11px] text-stone-500 font-medium">Items Received</span>
-              </div>
-              <div className="bg-amber-50/60 border border-amber-100 rounded-lg p-3">
-                <div className="flex items-center justify-center gap-1 text-xl font-bold text-amber-700">
-                  <Star className="w-4 h-4 fill-amber-400 text-amber-500" />
-                  {stats && stats.ratingCount > 0 ? stats.ratingAverage : 'New'}
-                </div>
-                <span className="text-[11px] text-stone-600 font-medium">
-                  {stats && stats.ratingCount > 0 ? `${stats.ratingCount} reviews` : 'Trust Rating'}
-                </span>
               </div>
             </div>
           </div>
@@ -418,78 +406,6 @@ export default function Profile() {
                 {savingProfile ? 'Saving…' : 'Save Profile Changes'}
               </button>
             </form>
-          </div>
-
-          {/* Neighbor Reviews Received Section */}
-          <div className="bg-white border border-stone-200 rounded-xl p-6 shadow-sm space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-base font-bold text-stone-900">
-                Endorsements from Neighbors ({reviews.length})
-              </h3>
-              {stats && stats.ratingCount > 0 && (
-                <span className="flex items-center gap-1 text-xs font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
-                  <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-500" />
-                  {stats.ratingAverage} / 5.0
-                </span>
-              )}
-            </div>
-
-            {loadingData && (
-              <p className="text-xs text-stone-500 py-4 text-center">Loading community reviews…</p>
-            )}
-
-            {!loadingData && reviews.length === 0 && (
-              <p className="text-xs text-stone-500 py-4 text-center">
-                You have not received any reviews yet. Complete your first giveaway exchange to build your community credibility score!
-              </p>
-            )}
-
-            {!loadingData && reviews.length > 0 && (
-              <div className="divide-y divide-stone-100">
-                {reviews.map((rev) => (
-                  <div key={rev._id} className="py-3 space-y-1.5 first:pt-0 last:pb-0">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        {rev.reviewer?.avatarUrl ? (
-                          <img
-                            src={rev.reviewer.avatarUrl}
-                            alt={rev.reviewer.name}
-                            className="w-6 h-6 rounded-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-6 h-6 rounded-full bg-stone-200 text-stone-700 font-semibold text-[10px] flex items-center justify-center">
-                            {rev.reviewer?.name?.charAt(0) || 'N'}
-                          </div>
-                        )}
-                        <span className="text-xs font-semibold text-stone-900">
-                          {rev.reviewer?.name || 'Neighbor'}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-0.5">
-                        {[...Array(5)].map((_, i) => (
-                          <Star
-                            key={i}
-                            className={`w-3 h-3 ${
-                              i < rev.rating
-                                ? 'text-amber-500 fill-amber-400'
-                                : 'text-stone-300'
-                            }`}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                    <p className="text-xs text-stone-700">&ldquo;{rev.comment}&rdquo;</p>
-                    <p className="text-[10px] text-stone-400">
-                      {new Date(rev.createdAt).toLocaleDateString('en-US', {
-                        month: 'short',
-                        day: 'numeric',
-                        year: 'numeric',
-                      })}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
         </div>
       </div>
